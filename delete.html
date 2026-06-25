@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OUTLIER // DELETE ACCOUNT</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+    :root {
+      --bg:        #090b0f;
+      --bg2:       #0d1117;
+      --accent:    #00ff9d;
+      --accent2:   #00c97a;
+      --dim:       #1a2a1e;
+      --text:      #c8ffd8;
+      --muted:     #4a7a5a;
+      --border:    #1e3a28;
+      --danger:    #ff4444;
+      --mono:      'Share Tech Mono', monospace;
+      --sans:      'Rajdhani', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,255,157,0.015) 2px,
+        rgba(0,255,157,0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .corner {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      opacity: 0.4;
+      z-index: 100;
+    }
+    .corner--tl { top: 16px; left: 16px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+    .corner--tr { top: 16px; right: 16px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+    .corner--bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+    .corner--br { bottom: 16px; right: 16px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 2px;
+      background: var(--danger);
+      box-shadow: 0 0 12px var(--danger);
+    }
+
+    .sys-line {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-bottom: 16px;
+    }
+    .sys-line span { color: var(--danger); }
+
+    h1 {
+      font-family: var(--sans);
+      font-size: clamp(24px, 5vw, 44px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #fff;
+      text-shadow: 0 0 24px rgba(255,68,68,0.4);
+      line-height: 1.1;
+    }
+    h1 em { font-style: normal; color: var(--danger); }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+    }
+
+    .wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 32px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      transition: color 0.15s;
+    }
+    .back-link::before { content: '< '; color: var(--accent); }
+    .back-link:hover { color: var(--accent); }
+
+    section { margin: 48px 0; }
+
+    h2 {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--danger);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h2::before { content: '> '; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    p { margin-bottom: 14px; font-size: 13.5px; color: var(--text); }
+
+    .warn {
+      border: 1px solid var(--danger);
+      background: rgba(255,68,68,0.05);
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+    .warn strong { color: var(--danger); display: block; margin-bottom: 6px; font-family: var(--sans); letter-spacing: 0.1em; font-size: 13px; }
+
+    ul {
+      list-style: none;
+      margin: 12px 0 16px;
+    }
+    ul li {
+      position: relative;
+      padding-left: 22px;
+      margin: 8px 0;
+      font-size: 13.5px;
+    }
+    ul li::before { content: '>'; position: absolute; left: 0; color: var(--accent); }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--danger);
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .cta-block {
+      border: 1px solid var(--danger);
+      background: rgba(255,68,68,0.04);
+      padding: 32px 28px;
+      text-align: center;
+      position: relative;
+      margin: 40px 0;
+    }
+    .cta-block::before {
+      content: '> SEND REQUEST';
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      padding: 0 12px;
+      font-size: 11px;
+      color: var(--danger);
+      letter-spacing: 0.2em;
+    }
+
+    .cta-block p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .btn-delete {
+      display: inline-block;
+      background: transparent;
+      border: 2px solid var(--danger);
+      color: var(--danger);
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 32px;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .btn-delete:hover {
+      background: var(--danger);
+      color: #000;
+      box-shadow: 0 0 20px rgba(255,68,68,0.4);
+    }
+
+    .note {
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-top: 64px;
+    }
+    footer span { color: var(--accent); }
+
+    @media (prefers-reduced-motion: no-preference) {
+      section {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 0.4s ease forwards;
+      }
+      section:nth-child(1) { animation-delay: 0.05s; }
+      section:nth-child(2) { animation-delay: 0.15s; }
+      section:nth-child(3) { animation-delay: 0.25s; }
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="corner corner--tl"></div>
+  <div class="corner corner--tr"></div>
+  <div class="corner corner--bl"></div>
+  <div class="corner corner--br"></div>
+
+  <header>
+    <div class="wrapper">
+      <div class="sys-line">> SYS // <span>OUTLIER</span> // ACCOUNT_DELETION_REQUEST</div>
+      <h1><em>DELETE</em> ACCOUNT</h1>
+      <div class="subtitle">PERMANENT ACTION — READ BEFORE PROCEEDING</div>
+    </div>
+  </header>
+
+  <div class="wrapper">
+
+    <a href="index.html" class="back-link">Back to Privacy Policy</a>
+
+    <section>
+      <h2>What Gets Deleted</h2>
+      <p>When you request account deletion, the following data is permanently removed from our systems within <strong>30 days</strong>:</p>
+      <div class="card">
+        <ul>
+          <li>All body measurements and personal statistics</li>
+          <li>Full workout and training session history</li>
+          <li>Your level, score, and percentile rankings</li>
+          <li>App settings and preferences stored in the cloud</li>
+          <li>Your Google Account association with Outlier</li>
+        </ul>
+      </div>
+
+      <div class="warn">
+        <strong>> WARNING: THIS ACTION IS IRREVERSIBLE</strong>
+        Deleted data cannot be recovered. If you sign in again after deletion, you will start fresh with no history.
+      </div>
+    </section>
+
+    <section>
+      <h2>How to Request Deletion</h2>
+      <p>Send us an email from the address associated with your Google Account. Include the subject line <strong>"Delete my account"</strong> so we can identify and process your request.</p>
+      <p>We will confirm deletion within 30 days.</p>
+
+      <div class="cta-block">
+        <p>Tap below to open a pre-filled deletion request email:</p>
+        <a class="btn-delete" href="mailto:empyreaninu@gmail.com?subject=Delete%20my%20account&body=Please%20delete%20my%20Outlier%20account%20and%20all%20associated%20data.%0A%0AGoogle%20account%20email%3A%20%5Byour%20email%5D">
+          > REQUEST DELETION
+        </a>
+        <div class="note">Opens your mail app · empyreaninu@gmail.com</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Local Data</h2>
+      <p>Data stored only on your device (when not signed in) is not on our servers — we cannot delete it remotely. To remove it, uninstall the App or clear its data via <strong>Android Settings → Apps → Outlier → Clear Data</strong>.</p>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="wrapper">
+      <span>> OUTLIER</span> &nbsp;|&nbsp; ACCOUNT DELETION &nbsp;|&nbsp; 2026
+    </div>
+  </footer>
+
+</body>
+</html>
