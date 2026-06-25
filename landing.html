@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OUTLIER — RPG Fitness Tracker</title>
+  <meta name="description" content="Outlier turns your body into a character sheet. Train. Measure. Level up. See exactly where you rank." />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+    :root {
+      --bg:      #090b0f;
+      --bg2:     #0d1117;
+      --bg3:     #111820;
+      --accent:  #00ff9d;
+      --accent2: #00c97a;
+      --dim:     #1a2a1e;
+      --text:    #c8ffd8;
+      --muted:   #4a7a5a;
+      --border:  #1e3a28;
+      --mono:    'Share Tech Mono', monospace;
+      --sans:    'Rajdhani', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.8;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* scanlines */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,255,157,0.012) 2px,
+        rgba(0,255,157,0.012) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .corner {
+      position: fixed;
+      width: 40px; height: 40px;
+      opacity: 0.35;
+      z-index: 100;
+    }
+    .corner--tl { top:16px; left:16px;   border-top:2px solid var(--accent); border-left:2px solid var(--accent); }
+    .corner--tr { top:16px; right:16px;  border-top:2px solid var(--accent); border-right:2px solid var(--accent); }
+    .corner--bl { bottom:16px; left:16px;  border-bottom:2px solid var(--accent); border-left:2px solid var(--accent); }
+    .corner--br { bottom:16px; right:16px; border-bottom:2px solid var(--accent); border-right:2px solid var(--accent); }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      background: rgba(9,11,15,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.15em;
+      color: #fff;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 100px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* animated grid bg */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,157,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,157,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+      animation: gridPulse 6s ease-in-out infinite;
+    }
+
+    @keyframes gridPulse {
+      0%, 100% { opacity: 0.6; }
+      50%       { opacity: 1; }
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.1s ease forwards;
+    }
+
+    .hero h1 {
+      font-family: var(--sans);
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(0,255,157,0.3);
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s ease forwards;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+      display: block;
+    }
+
+    .hero-sub {
+      max-width: 540px;
+      margin: 24px auto 0;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.35s ease forwards;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.5s ease forwards;
+    }
+
+    .btn {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 32px;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: #fff;
+      box-shadow: 0 0 24px rgba(0,255,157,0.5);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    .btn-secondary:hover {
+      background: rgba(0,255,157,0.08);
+    }
+
+    .hero-stat-row {
+      display: flex;
+      gap: 48px;
+      margin-top: 64px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.65s ease forwards;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat-num {
+      font-family: var(--sans);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* WRAPPER */
+    .wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* SECTION BASE */
+    .section {
+      padding: 96px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .section-label::before { content: '> '; }
+
+    .section h2 {
+      font-family: var(--sans);
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-intro {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 2px;
+      margin-top: 48px;
+    }
+
+    .step {
+      background: var(--bg2);
+      padding: 28px 24px;
+      position: relative;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .step:hover { border-color: var(--accent); }
+
+    .step-num {
+      font-family: var(--sans);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--dim);
+      line-height: 1;
+      margin-bottom: 16px;
+      transition: color 0.2s;
+    }
+    .step:hover .step-num { color: var(--accent); }
+
+    .step h3 {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* FEATURES */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 48px;
+    }
+
+    .feature {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 24px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .feature:hover {
+      border-color: var(--accent);
+      background: var(--bg3);
+    }
+
+    .feature-icon {
+      font-size: 20px;
+      margin-bottom: 14px;
+      color: var(--accent);
+      font-family: var(--mono);
+    }
+
+    .feature h3 {
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .feature p {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* THEMES */
+    .themes {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+
+    .theme-card {
+      flex: 1;
+      min-width: 140px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 20px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .theme-card:hover { transform: translateY(-4px); }
+
+    .theme-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .theme-card.default  { --tc: #00ff9d; }
+    .theme-card.cyberpunk { --tc: #00e5ff; }
+    .theme-card.matrix   { --tc: #39ff14; }
+    .theme-card.synthwave { --tc: #ff6ec7; }
+    .theme-card.bladerunner { --tc: #ff9800; }
+
+    .theme-card::before { background: var(--tc); box-shadow: 0 0 8px var(--tc); }
+
+    .theme-prefix {
+      font-size: 20px;
+      color: var(--tc);
+      margin-bottom: 10px;
+      font-family: var(--mono);
+    }
+
+    .theme-name {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .theme-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* TERMINAL BLOCK */
+    .terminal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      background: var(--dim);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .terminal-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-left: 8px;
+    }
+
+    .terminal-body {
+      padding: 24px 28px;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .t-dim  { color: var(--muted); }
+    .t-acc  { color: var(--accent); }
+    .t-wht  { color: #fff; }
+    .t-warn { color: #febc2e; }
+
+    .cursor::after {
+      content: '_';
+      animation: blink 1s step-end infinite;
+      color: var(--accent);
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      margin-top: 0;
+    }
+
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.15em;
+      color: #fff;
+    }
+    .footer-logo span { color: var(--accent); }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-copy {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* UTILS */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .themes { flex-direction: column; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="corner corner--tl"></div>
+  <div class="corner corner--tr"></div>
+  <div class="corner corner--bl"></div>
+  <div class="corner corner--br"></div>
+
+  <nav>
+    <div class="nav-logo"><span>OUT</span>LIER</div>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#themes">Themes</a></li>
+      <li><a href="index.html">Privacy Policy</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">> OUTLIER // RPG FITNESS TRACKER // ANDROID</div>
+    <h1>YOUR BODY<em>LEVELLED UP</em></h1>
+    <p class="hero-sub">Outlier turns your fitness into an RPG. Track workouts, measure your body, and see exactly where you rank on a Gaussian distribution — your real percentile among real people.</p>
+    <div class="hero-cta">
+      <a href="#how" class="btn btn-primary">> HOW IT WORKS</a>
+      <a href="#features" class="btn btn-secondary">EXPLORE FEATURES</a>
+    </div>
+    <div class="hero-stat-row">
+      <div class="hero-stat">
+        <div class="hero-stat-num">89</div>
+        <div class="hero-stat-label">Animated exercises</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">5</div>
+        <div class="hero-stat-label">Visual themes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">10</div>
+        <div class="hero-stat-label">Workout presets</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">∞</div>
+        <div class="hero-stat-label">Ways to level up</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="wrapper">
+      <div class="section-label">System boot</div>
+      <h2>HOW IT WORKS</h2>
+      <p class="section-intro">Outlier treats your body like a character sheet. Every measurement and every session counts toward your rank.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Measure</h3>
+          <p>Enter your body stats — weight, height, circumferences, body fat. Outlier calculates your real percentile using NHANES population data and a Gaussian model.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Train</h3>
+          <p>Log workouts in Quick or Live mode. Choose from 10 presets or build your own. 89 animated exercise guides keep your form sharp.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Level Up</h3>
+          <p>Your level reflects where you actually stand — not just how many times you opened the app. Watch your percentile climb as your body changes.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h3>Dominate</h3>
+          <p>Track progressive overload, earn achievements, keep your streak alive. The cat starves if you don't train. Don't let the cat starve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TERMINAL -->
+  <section class="section" id="terminal" style="padding-top:0; border-top:none;">
+    <div class="wrapper">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="terminal-label">OUTLIER // STATS_REPORT.LOG</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-dim">> </span><span class="t-acc">SCANNING USER PROFILE...</span></div>
+          <div><span class="t-dim">> WEIGHT............</span><span class="t-wht">82.4 kg</span></div>
+          <div><span class="t-dim">> BODY FAT..........</span><span class="t-wht">14.2%</span></div>
+          <div><span class="t-dim">> OVERALL PERCENTILE.</span><span class="t-acc">TOP 23%</span></div>
+          <div><span class="t-dim">> LEVEL..............</span><span class="t-acc">LV 12 // ENHANCED</span></div>
+          <div><span class="t-dim">> STREAK.............</span><span class="t-wht">14 days</span></div>
+          <div><span class="t-dim">> LAST SESSION......</span><span class="t-wht">PUSH // 48 min // ↑ PR</span></div>
+          <div><span class="t-dim">> STATUS.............</span><span class="t-warn">CAT HUNGER: 40% ⚠</span></div>
+          <div><span class="t-acc cursor">_</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="wrapper">
+      <div class="section-label">Feature set</div>
+      <h2>WHAT YOU GET</h2>
+      <p class="section-intro">Everything you need to track, analyse, and level up — no subscriptions, no ads, no fluff.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">> PERCENTILE</div>
+          <h3>Real Rankings</h3>
+          <p>Gaussian distribution based on NHANES population data. See where you actually stand, not where an algorithm wants you to feel good.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> LIVE MODE</div>
+          <h3>Live Workout</h3>
+          <p>Per-set logging with rest timer, pause/resume, undo sets, extend cooldown, and sound feedback per theme. Runs over navigation — won't reset.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> ANIMATED</div>
+          <h3>89 Exercises</h3>
+          <p>Every exercise has a smooth animation guide. Search by category, add mid-workout, merge whole templates on the fly.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> OVERLOAD</div>
+          <h3>Progressive Overload</h3>
+          <p>Automatic PR detection across your session history. Badges per theme — ↑ PR / &gt; UPGRADED / &gt;&gt; IMPROVED.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> STATS</div>
+          <h3>Body Composition</h3>
+          <p>Navy body fat formula with floor clamp, percentile chart, goal line, history and tooltips. Estimates flagged with ≈ for transparency.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> WIDGET</div>
+          <h3>Home Screen Widget</h3>
+          <p>Level, top percentile and streak at a glance. Updates after every workout finish.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> STREAK</div>
+          <h3>Streak & Achievements</h3>
+          <p>Daily streak, 10 easter eggs, achievement system, quests and a cat that gets hungry when you skip training.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">> LOCAL</div>
+          <h3>Privacy First</h3>
+          <p>All data stays on your device by default. Optional Google sign-in for cloud backup — you own your data, always.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THEMES -->
+  <section class="section" id="themes">
+    <div class="wrapper">
+      <div class="section-label">Visual identity</div>
+      <h2>5 THEMES</h2>
+      <p class="section-intro">Pick the aesthetic that fits your headspace. Every screen, sound, and badge changes with it.</p>
+      <div class="themes">
+        <div class="theme-card default">
+          <div class="theme-prefix">+</div>
+          <div class="theme-name">Default</div>
+          <div class="theme-desc">Clean holographic green. The baseline.</div>
+        </div>
+        <div class="theme-card cyberpunk">
+          <div class="theme-prefix">&gt;</div>
+          <div class="theme-name">Cyberpunk</div>
+          <div class="theme-desc">Electric cyan. Neon city at 3am.</div>
+        </div>
+        <div class="theme-card matrix">
+          <div class="theme-prefix">&gt;&gt;</div>
+          <div class="theme-name">Matrix</div>
+          <div class="theme-desc">Acid green rain. You are the code.</div>
+        </div>
+        <div class="theme-card synthwave">
+          <div class="theme-prefix">▶</div>
+          <div class="theme-name">Synthwave</div>
+          <div class="theme-desc">Pink outrun sunset. 80s forever.</div>
+        </div>
+        <div class="theme-card bladerunner">
+          <div class="theme-prefix">//</div>
+          <div class="theme-name">Blade Runner</div>
+          <div class="theme-desc">Amber rain. Replicant strength.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo"><span>OUT</span>LIER</div>
+      <ul class="footer-links">
+        <li><a href="index.html">Privacy Policy</a></li>
+        <li><a href="delete.html">Delete Account</a></li>
+        <li><a href="mailto:empyreaninu@gmail.com">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-copy">> 2026 OUTLIER // ALL DATA STAYS YOURS // NO ADS // NO SUBSCRIPTIONS</div>
+  </footer>
+
+</body>
+</html>
